@@ -33,9 +33,6 @@ A library used to create and send HTTP requests to a remote server and return th
 
 (The MIT License)
 
-	Copyright (c) 2009-2012 James Coglan
-	Copyright (c) 2011 Paul Crawford
-	Copyright (c) 2012 Eric Butler
 	Copyright (c) 2013 Saul Howard
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy of
