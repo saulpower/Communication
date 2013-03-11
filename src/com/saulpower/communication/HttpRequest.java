@@ -21,6 +21,9 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 
+/**
+ * A class used to send HTTP requests to a remote server and parse the response
+ */
 public class HttpRequest {
 	
 	public static final String TAG = "HttpRequest";
@@ -32,34 +35,87 @@ public class HttpRequest {
 	
 	private static final int CONNECTION_TIMEOUT = 30000;
 	private static final int SOCKET_TIMEOUT = 30000;
-	
+
+    /**
+     * Send a HTTP GET request to the server at the url provided with the supplied headers and parameters
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to add to the request
+     * @return The response from the server as a string
+     *
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
 	public static String sendGet(String url, HashMap<String, String> headers, HashMap<String, String> params) throws ClientProtocolException, IOException {
 		return sendRequest(url, GET, headers, params, null);
 	}
-	
+
+    /**
+     * Send a HTTP POST request to the server at the url provided with the supplied headers, parameters, and body
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to add to the request
+     * @param data The POST body
+     *
+     * @return The response from the server as a string
+     *
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
 	public static String sendPost(String url, HashMap<String, String> headers, HashMap<String, String> params, String data) throws ClientProtocolException, IOException {
 		return sendRequest(url, POST, headers, params, data);
 	}
-	
+
+    /**
+     * Send a HTTP PUT request to the server at the url provided with the supplied headers, parameters, and body
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to add to the request
+     * @param data The PUT body
+     *
+     * @return The response from the server as a string
+     *
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
 	public static String sendPut(String url, HashMap<String, String> headers, HashMap<String, String> params, String data) throws ClientProtocolException, IOException {
 		return sendRequest(url, PUT, headers, params, data);
 	}
-	
+
+    /**
+     * Send a HTTP DELETE request to the server at the url provided with the supplied headers, parameters, and body
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to add to the request
+     * @param data The DELETE body
+     *
+     * @return The response from the server as a string
+     *
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
 	public static String sendDelete(String url, HashMap<String, String> headers, HashMap<String, String> params, String data) throws ClientProtocolException, IOException {
 		return sendRequest(url, DELETE, headers, params, data);
 	}
-	
-	/**
-	 * Make an HTTP POST request to the supplied URL, appending the auth token
-	 * and inserting the body data
-	 *  
-	 * @param url
-	 * @param token
-	 * @param data
-	 * @return
-	 * @throws IOException 
-	 * @throws ClientProtocolException 
-	 */
+
+    /**
+     * Create and send the specified HTTP method request to the server url
+     *
+     * @param url The url to send the request to
+     * @param method The HTTP method to use (GET, POST, PUT, DELETE)
+     * @param headers The headers to add to the request
+     * @param params The parameters to add to the request
+     * @param data The request body
+     *
+     * @return The response from the server as a string
+     *
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
 	private static String sendRequest(String url, String method, HashMap<String, String> headers, HashMap<String, String> params, String data) throws ClientProtocolException, IOException {
 		
 		// Define http parameters
@@ -104,17 +160,26 @@ public class HttpRequest {
 
         StatusLine statusLine = response.getStatusLine();
         int statusCode = statusLine.getStatusCode() / 100;
-//        if (statusCode != 2) {
-//        	
-//        	//Closes the connection.
-//            response.getEntity().getContent().close();
-//            throw new IOException(statusLine.getReasonPhrase() + " URL: " + url);
-//        }
+        if (statusCode != 2) {
+
+        	//Closes the connection.
+            response.getEntity().getContent().close();
+            throw new IOException(statusLine.getReasonPhrase() + " URL: " + url);
+        }
         
         // Return string response
 	    return getResponseBody(response.getEntity());
 	}
-	
+
+    /**
+     * Extract the response body string from the http entity
+     *
+     * @param entity The HTTP response entity
+     *
+     * @return A string representation of the response body
+     *
+     * @throws IOException
+     */
 	private static String getResponseBody(final HttpEntity entity) throws IOException {
 		
 		try {
@@ -129,7 +194,14 @@ public class HttpRequest {
 			return null;
 		}
 	}
-	
+
+    /**
+     * Create the appropriate request based on the supplied method
+     *
+     * @param method the HTTP method to use
+     * @param url The url to send the request to
+     * @return A {@link HttpUriRequest} object to facilitate sending the request to the server
+     */
 	private static HttpUriRequest getRequest(String method, String url) {
 		
 		if (method.equals(GET)) {
@@ -150,17 +222,24 @@ public class HttpRequest {
 		
 		return null;
 	}
-	
-	private static String toQueryString(HashMap<String, String> attributes) {
+
+    /**
+     * Converts the supplied {@link HashMap} to a query string which can be appended to the request url
+     *
+     * @param parameters The key value pair parameters to use
+     *
+     * @return A querystring of the passed in parameters
+     */
+	private static String toQueryString(HashMap<String, String> parameters) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("?");
 		
-		for (String key : attributes.keySet()) {
-			if (attributes.get(key) != null) {
+		for (String key : parameters.keySet()) {
+			if (parameters.get(key) != null) {
 				sb.append(key);
 				sb.append("=");
-				sb.append(URLEncoder.encode(attributes.get(key)));
+				sb.append(URLEncoder.encode(parameters.get(key)));
 				sb.append("&");
 			}
 		}
