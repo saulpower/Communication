@@ -29,6 +29,17 @@ A library used to create and send HTTP requests to a remote server and return th
     }
 ```
 
+For Maven users:
+
+```xml
+	<dependency>
+		<groupId>com.saulpower.communication</groupId>
+		<artifactId>library</artifactId>
+		<version>1.0</version>
+	</dependency>
+```
+
+
 ## License
 
 (The MIT License)
