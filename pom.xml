@@ -11,7 +11,7 @@
     <groupId>com.saulpower.communication</groupId>
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
 
     <name>Android HTTP Communication Library</name>
     <description>Android HTTP Communication Library</description>
@@ -39,7 +39,7 @@
         <url>https://github.com/saulpower/Communication</url>
         <connection>scm:git:git://github.com/saulpower/Communication.git</connection>
         <developerConnection>scm:git:git@github.com:saulpower/Communication.git</developerConnection>
-      <tag>parent-1.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
