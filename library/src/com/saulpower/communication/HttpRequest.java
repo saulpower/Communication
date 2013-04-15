@@ -1,12 +1,16 @@
 package com.saulpower.communication;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -53,9 +57,11 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     public static com.saulpower.communication.HttpResponse sendGet(final String url, final HashMap<String, String> headers,
-                                                                   final HashMap<String, String> params) throws IOException {
+                                                                   final HashMap<String, String> params)
+            throws IOException, AuthenticationException {
         return sendRequest(url, GET, headers, params, null, null, null);
     }
 
@@ -69,9 +75,11 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     public static com.saulpower.communication.HttpResponse sendPost(final String url, final HashMap<String, String> headers,
-                                                                    final HashMap<String, String> params, final String data) throws IOException {
+                                                                    final HashMap<String, String> params, final String data)
+            throws IOException, AuthenticationException {
         return sendRequest(url, POST, headers, params, data, null, null);
     }
 
@@ -87,10 +95,12 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     public static com.saulpower.communication.HttpResponse sendPost(final String url, final HashMap<String, String> headers,
                                                                     final HashMap<String, String> params, final String data,
-                                                                    final String username, final String password) throws IOException {
+                                                                    final String username, final String password)
+            throws IOException, AuthenticationException {
         return sendRequest(url, POST, headers, params, data, username, password);
     }
 
@@ -104,9 +114,11 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     public static com.saulpower.communication.HttpResponse sendPut(final String url, final HashMap<String, String> headers,
-                                                                   final HashMap<String, String> params, final String data) throws IOException {
+                                                                   final HashMap<String, String> params, final String data)
+            throws IOException, AuthenticationException {
         return sendRequest(url, PUT, headers, params, data, null, null);
     }
 
@@ -120,9 +132,11 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     public static com.saulpower.communication.HttpResponse sendDelete(final String url, final HashMap<String, String> headers,
-                                                                      final HashMap<String, String> params, final String data) throws IOException {
+                                                                      final HashMap<String, String> params, final String data)
+            throws IOException, AuthenticationException {
         return sendRequest(url, DELETE, headers, params, data, null, null);
     }
 
@@ -139,10 +153,12 @@ public class HttpRequest {
      * @return The response from the server
      *
      * @throws IOException IOException When communication issues arise
+     * @throws AuthenticationException If authentication fails
      */
     private static com.saulpower.communication.HttpResponse sendRequest(final String url, final String method, final HashMap<String, String> headers,
                                                                         final HashMap<String, String> params, final String data,
-                                                                        final String username, final String password) throws IOException {
+                                                                        final String username, final String password)
+            throws IOException, AuthenticationException {
 
         // Define http parameters
         HttpParams httpParameters = new BasicHttpParams();
@@ -180,6 +196,17 @@ public class HttpRequest {
 
             StringEntity se = new StringEntity(data, HTTP.UTF_8);
             ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(se);
+        }
+
+        // Add authentication header
+        if (username != null && password != null) {
+
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+            BasicScheme scheme = new BasicScheme();
+            Header authorizationHeader;
+            authorizationHeader = scheme.authenticate(credentials, httpRequest);
+
+            httpRequest.addHeader(authorizationHeader);
         }
 
         // Execute HTTP Request
