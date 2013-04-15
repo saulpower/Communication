@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.saulpower.communication</groupId>
         <artifactId>parent</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.saulpower.communication</groupId>
     <artifactId>library</artifactId>
-  <version>1.0.2</version>
+  <version>1.4</version>
     <name>Android HTTP Communication</name>
     <packaging>jar</packaging>
 
