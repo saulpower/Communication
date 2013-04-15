@@ -1,8 +1,6 @@
 package com.saulpower.communication;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -15,54 +13,136 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
+/**
+ * Android helper class to send HTTP Requests to remote servers and handle the response.
+ */
 public class HttpRequest {
 
-    public static final String TAG = "HttpRequest";
+    /** Logging tag */
+    private static final String TAG = "HttpRequest";
 
+    /** HTTP GET method */
     private static final String GET = "GET";
+
+    /** HTTP POST method */
     private static final String POST = "POST";
+
+    /** HTTP PUT method */
     private static final String PUT = "PUT";
+
+    /** HTTP DELETE method */
     private static final String DELETE = "DELETE";
 
+    /** Connection timeout amount */
     private static final int CONNECTION_TIMEOUT = 30000;
+
+    /** Socket timeout amount */
     private static final int SOCKET_TIMEOUT = 30000;
 
-    public static String sendGet(String url, HashMap<String, String> headers, HashMap<String, String> params)
-            throws IOException {
-        return sendRequest(url, GET, headers, params, null);
-    }
-
-    public static String sendPost(String url, HashMap<String, String> headers, HashMap<String, String> params,
-                                  String data) throws IOException {
-        return sendRequest(url, POST, headers, params, data);
-    }
-
-    public static String sendPut(String url, HashMap<String, String> headers, HashMap<String, String> params,
-                                 String data) throws IOException {
-        return sendRequest(url, PUT, headers, params, data);
-    }
-
-    public static String sendDelete(String url, HashMap<String, String> headers, HashMap<String, String> params,
-                                    String data) throws IOException {
-        return sendRequest(url, DELETE, headers, params, data);
+    /**
+     * Send an HTTP GET request with the supplied parameters
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     *
+     * @return The response from the server
+     *
+     * @throws IOException When communication issues arise
+     */
+    public static com.saulpower.communication.HttpResponse sendGet(final String url, final HashMap<String, String> headers,
+                                                                   final HashMap<String, String> params) throws IOException {
+        return sendRequest(url, GET, headers, params, null, null, null);
     }
 
     /**
-     * Make an HTTP POST request to the supplied URL, appending the auth token
-     * and inserting the body data
      *
-     * @param url
-     * @param data
-     * @return
-     * @throws IOException
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     * @param data The body data to send
+     *
+     * @return The response from the server
+     *
+     * @throws IOException IOException When communication issues arise
      */
-    private static String sendRequest(String url, String method, HashMap<String, String> headers, HashMap<String,
-            String> params, String data) throws IOException {
+    public static com.saulpower.communication.HttpResponse sendPost(final String url, final HashMap<String, String> headers,
+                                                                    final HashMap<String, String> params, final String data) throws IOException {
+        return sendRequest(url, POST, headers, params, data, null, null);
+    }
+
+    /**
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     * @param data The body data to send
+     * @param username The username to authenticate to the server
+     * @param password The password to authenticate to the server
+     *
+     * @return The response from the server
+     *
+     * @throws IOException IOException When communication issues arise
+     */
+    public static com.saulpower.communication.HttpResponse sendPost(final String url, final HashMap<String, String> headers,
+                                                                    final HashMap<String, String> params, final String data,
+                                                                    final String username, final String password) throws IOException {
+        return sendRequest(url, POST, headers, params, data, username, password);
+    }
+
+    /**
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     * @param data The body data to send
+     *
+     * @return The response from the server
+     *
+     * @throws IOException IOException When communication issues arise
+     */
+    public static com.saulpower.communication.HttpResponse sendPut(final String url, final HashMap<String, String> headers,
+                                                                   final HashMap<String, String> params, final String data) throws IOException {
+        return sendRequest(url, PUT, headers, params, data, null, null);
+    }
+
+    /**
+     *
+     * @param url The url to send the request to
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     * @param data The body data to send
+     *
+     * @return The response from the server
+     *
+     * @throws IOException IOException When communication issues arise
+     */
+    public static com.saulpower.communication.HttpResponse sendDelete(final String url, final HashMap<String, String> headers,
+                                                                      final HashMap<String, String> params, final String data) throws IOException {
+        return sendRequest(url, DELETE, headers, params, data, null, null);
+    }
+
+    /**
+     *
+     * @param url The url to send the request to
+     * @param method The HTTP request method (i.e. GET, POST, PUT, DELETE)
+     * @param headers The headers to add to the request
+     * @param params The parameters to append to the URL string
+     * @param data The body data to send
+     * @param username The username for authentication
+     * @param password The password for authentication
+     *
+     * @return The response from the server
+     *
+     * @throws IOException IOException When communication issues arise
+     */
+    private static com.saulpower.communication.HttpResponse sendRequest(final String url, final String method, final HashMap<String, String> headers,
+                                                                        final HashMap<String, String> params, final String data,
+                                                                        final String username, final String password) throws IOException {
 
         // Define http parameters
         HttpParams httpParameters = new BasicHttpParams();
@@ -70,15 +150,18 @@ public class HttpRequest {
         HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
 
         // Create a new HttpClient
-        DefaultHttpClient httpclient = HttpClientFactory.getThreadSafeClient();
-        httpclient.setParams(httpParameters);
+        DefaultHttpClient httpClient = HttpClientFactory.getThreadSafeClient();
+        httpClient.setParams(httpParameters);
+
+        String queryUrl = url;
 
         // Add query string parameters to url
-        if (params != null)
-            url += toQueryString(params);
+        if (params != null) {
+            queryUrl += toQueryString(params);
+        }
 
         // Create request based on method
-        HttpUriRequest httpRequest = getRequest(method, url);
+        HttpUriRequest httpRequest = getRequest(method, queryUrl);
 
         if (httpRequest == null)
             throw new IllegalArgumentException("Method not supported");
@@ -99,40 +182,22 @@ public class HttpRequest {
             ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(se);
         }
 
-        HttpResponse response = null;
-
         // Execute HTTP Request
-        response = httpclient.execute(httpRequest);
-
-        StatusLine statusLine = response.getStatusLine();
-        int statusCode = statusLine.getStatusCode() / 100;
-//        if (statusCode != 2) {
-//
-//            //Closes the connection.
-//            response.getEntity().getContent().close();
-//            throw new IOException(statusLine.getReasonPhrase() + " URL: " + url);
-//        }
+        HttpResponse response = httpClient.execute(httpRequest);
 
         // Return string response
-        return getResponseBody(response.getEntity());
+        return new com.saulpower.communication.HttpResponse(response);
     }
 
-    private static String getResponseBody(final HttpEntity entity) throws IOException {
-
-        try {
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            entity.writeTo(out);
-            out.close();
-
-            return out.toString();
-
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    private static HttpUriRequest getRequest(String method, String url) {
+    /**
+     * Returns the appropriate request class for the supplied method
+     *
+     * @param method The HTTP request method (i.e. GET, POST, PUT, DELETE)
+     * @param url The URL to send the request to
+     *
+     * @return The appropriate HttpUriRequest object to perform the request with
+     */
+    private static HttpUriRequest getRequest(final String method, final String url) {
 
         if (method.equals(GET)) {
             return new HttpGet(url);
@@ -153,7 +218,14 @@ public class HttpRequest {
         return null;
     }
 
-    private static String toQueryString(HashMap<String, String> attributes) {
+    /**
+     * Append the attributes to the URL string to create the query string
+     *
+     * @param attributes The attributes to add to the URL string
+     *
+     * @return The query string
+     */
+    private static String toQueryString(final HashMap<String, String> attributes) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("?");
